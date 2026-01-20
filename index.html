@@ -1,0 +1,556 @@
+<!DOCTYPE html> 
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sistema de Chamados</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+* { 
+  box-sizing: border-box; 
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 15px;
+  background: #e9ecef;
+  font-size: 14px;
+  height: 100vh;
+  width: 100vw;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#mainframe {
+  max-width: 1700px;
+  width: 96%;
+  height: 94vh;
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.header-bar {
+  background: #0b5d3b;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.container-principal {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  gap: 12px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.painel-direito {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.modulo-painel {
+  border: 2px solid #0b5d3b;
+  border-radius: 6px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.painel-direito .modulo-painel:first-child {
+  flex-shrink: 0;
+}
+
+.painel-direito .modulo-painel:last-child {
+  flex: 1;
+  min-height: 0;
+}
+
+.panel-header {
+  background: #0b5d3b;
+  color: #fff;
+  padding: 7px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.form-area { 
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.campo-linha { 
+  display: flex; 
+  flex-direction: column; 
+  margin-bottom: 3px; 
+}
+
+.campo-linha label { 
+  font-size: 12px; 
+  font-weight: bold; 
+  margin-bottom: 2px; 
+  color: #333; 
+}
+
+input, select, textarea { 
+  width: 100%; 
+  padding: 4px 6px; 
+  border: 1px solid #ced4da; 
+  border-radius: 4px; 
+  font-size: 16px;
+  max-width: 100%;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+textarea#descricao { 
+  height: 32px; 
+  resize: none; 
+}
+
+.secao-consulta { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr 1fr; 
+  gap: 8px; 
+  padding: 8px; 
+  background: #f8f9fa; 
+}
+
+.resultado-grid { 
+  display: grid; 
+  grid-template-columns: repeat(6, 1fr); 
+  gap: 5px; 
+  padding: 8px; 
+  background: #f8f9fa; 
+}
+
+.mini-label { 
+  font-size: 12px; 
+  font-weight: bold; 
+  display: block; 
+  margin-bottom: 2px; 
+}
+
+.tabela-container { 
+  width: 100%; 
+  flex: 1;
+  overflow-y: auto; 
+  overflow-x: hidden;
+}
+
+.tabela-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tabela-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.tabela-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  font-size: 12px; 
+}
+
+th, td { 
+  border-bottom: 1px solid #eee; 
+  padding: 7px 5px; 
+  text-align: left; 
+}
+
+th { 
+  background: #f1f3f5; 
+  position: sticky; 
+  top: 0; 
+  z-index: 1; 
+}
+
+button { 
+  padding: 5px 12px; 
+  font-size: 16px; 
+  border-radius: 4px; 
+  border: none; 
+  cursor: pointer; 
+  font-weight: bold;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.btn-save { background: #007bff; color: #fff; }
+.btn-txt { background: #28a745; color: #fff; }
+.btn-nav { background: #6fcf97; color: #0b5d3b; }
+
+.status-msg { 
+  font-size: 11px; 
+  margin-top: 3px; 
+}
+
+.found { color: green; font-weight: bold; }
+.notfound { color: #c0392b; font-weight: bold; }
+
+@keyframes spin { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
+
+/* Responsividade Mobile */
+@media (max-width: 768px) {
+  body {
+    padding: 8px;
+    height: auto;
+    width: 100vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-items: flex-start;
+  }
+  
+  #mainframe {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    padding: 8px;
+    overflow: visible;
+  }
+  
+  .header-bar {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .header-bar h2 {
+    font-size: 16px !important;
+  }
+  
+  .container-principal {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    overflow: visible;
+  }
+  
+  /* Ordem mobile: Chamados Recentes -> Consulta Selo -> Novo Chamado */
+  .container-principal {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .modulo-painel:nth-child(1) {
+    order: 3;
+  }
+  
+  .painel-direito {
+    display: contents;
+  }
+  
+  .painel-direito .modulo-painel:first-child {
+    order: 2;
+  }
+  
+  .painel-direito .modulo-painel:last-child {
+    order: 1;
+  }
+  
+  .tabela-container {
+    max-height: 300px;
+  }
+  
+  .secao-consulta {
+    grid-template-columns: 1fr;
+  }
+  
+  .resultado-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  input, select, textarea, button {
+    font-size: 16px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="mainframe">
+  <div class="header-bar">
+    <h2 style="margin:0; font-size:18px;">SISTEMA DE CHAMADOS</h2>
+    <button class="btn-nav" onclick="window.open('https://docs.google.com/spreadsheets/d/1142MfU41euisLbUfpOJz_xEffv4YndQeFlqNatGf1kU/edit', '_blank')">📊 ABRIR PLANILHA</button>
+  </div>
+
+  <div class="container-principal">
+    <div class="modulo-painel">
+      <div class="panel-header">📝 NOVO CHAMADO</div>
+      <div class="form-area">
+        <div class="campo-linha"><label>Título</label><input id="titulo" type="text" placeholder="Ex: BRASKEM - RJ - INC1051857..."></div>
+        <div class="campo-linha"><label>Solicitante</label><input id="solicitante" type="text"></div>
+        <div class="campo-linha"><label>Login</label><input id="login" type="text"></div>
+        <div class="campo-linha"><label>CC</label><input id="cc" type="text"></div>
+        <div class="campo-linha"><label>Unidade</label><input id="unidade" type="text"></div>
+        <div class="campo-linha"><label>Departamento</label><input id="departamento" type="text"></div>
+        <div class="campo-linha"><label>Contato</label><input id="contato" type="text"></div>
+        <div class="campo-linha"><label>Email</label><input id="email" type="email"></div>
+        <div class="campo-linha"><label>Previsão de entrega</label><input id="previsao" type="date"></div>
+        <div class="campo-linha"><label>Descrição</label><textarea id="descricao"></textarea></div>
+        <div class="campo-linha"><label>Equipamento</label><input id="equipamento" type="text"></div>
+        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:5px">
+          <button class="btn-save" onclick="salvarChamado()">SALVAR</button>
+          <button class="btn-txt" onclick="gerarTXT()">GERAR TXT</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="painel-direito">
+      <div class="modulo-painel">
+        <div class="panel-header">🔍 CONSULTA DE SELO</div>
+        <div class="secao-consulta">
+          <div>
+            <label class="mini-label">Arquivo Local</label>
+            <div style="display:flex;gap:2px">
+              <input id="nomeArq" readonly style="font-size:11px" placeholder="Nenhum arquivo">
+              <button onclick="document.getElementById('fileIn').click()" style="background:#6c757d;color:#fff;padding:4px 8px;font-size:12px">📂</button>
+              <input type="file" id="fileIn" accept=".xlsx,.xls" style="display:none">
+            </div>
+            <div id="statusArquivo" class="status-msg"></div>
+          </div>
+          <div>
+            <label class="mini-label">Google Drive</label>
+            <div style="display:flex;gap:2px">
+              <select id="selDrive" style="font-size:12px;flex:1">
+                <option value="">Selecione...</option>
+                <option value="rj">BRASKEM RJ</option>
+                <option value="sp">BRASKEM SP</option>
+              </select>
+              <button id="btnCarregarDrive" class="btn-save" style="font-size:11px;padding:4px 8px" disabled>Carregar</button>
+            </div>
+            <div id="statusDrive" class="status-msg"></div>
+          </div>
+          <div>
+            <label class="mini-label">Selo de Garantia</label>
+            <div style="display:flex;gap:2px">
+              <input id="patIn" placeholder="Digite o selo" style="font-size:13px">
+              <button id="btnBuscar" class="btn-save" style="background:#4da3ff;padding:4px 8px;font-size:12px" disabled>🔍</button>
+            </div>
+            <div id="statusBusca" class="status-msg"></div>
+          </div>
+        </div>
+        <div class="resultado-grid">
+          <div><label class="mini-label">Modelo</label><input id="resModelo" readonly></div>
+          <div><label class="mini-label">Departamento</label><input id="resDepartamento" readonly></div>
+          <div><label class="mini-label">Usuário</label><input id="resUsuario" readonly></div>
+          <div><label class="mini-label">Login</label><input id="resLogin" readonly></div>
+          <div><label class="mini-label">CC</label><input id="resCC" readonly></div>
+          <div><label class="mini-label">Selo</label><input id="resSelo" readonly></div>
+        </div>
+      </div>
+
+      <div class="modulo-painel">
+        <div class="panel-header">📋 CHAMADOS RECENTES</div>
+        <div class="tabela-container">
+          <table>
+            <thead><tr><th>Data</th><th>Título</th><th>Solicitante</th><th>Ação</th></tr></thead>
+            <tbody id="listaChamados"><tr><td colspan="4" style="text-align:center">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalTxt" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:#fff;width:90%;max-width:500px;padding:15px;border-radius:8px;border:2px solid #0b5d3b;">
+    <h3 style="margin-top:0;color:#0b5d3b;">Pré-visualização</h3>
+    <textarea id="txtPreview" style="width:100%;height:250px;font-family:monospace;font-size:14px;padding:10px;border:1px solid #ccc;border-radius:4px;"></textarea>
+    <div style="text-align:right;margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn-nav" style="background:#6c757d;color:#fff" onclick="fecharModalTxt()">Cancelar</button>
+      <button class="btn-txt" onclick="copiarTxt()">Copiar</button>
+      <button class="btn-save" onclick="confirmarTXT()">Gerar TXT</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalSalvando" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:30px;border-radius:8px;text-align:center;">
+    <div style="width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #007bff;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px;"></div>
+    <p style="font-size:14px">Processando...</p>
+  </div>
+</div>
+
+<script>
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz9jqdg60ZbO8C6zHC3DkvIPglkL5jgMTQDctLsY3FdapoFyOrtnrtmZNZpL-b30oEyZw/exec';
+
+const PLANILHAS_DRIVE = {
+  rj: '14Htn3BT26Pvrd0NIYGRjuJFDspLJHMM0CKOJ1sGTfAs',
+  sp: '1FD6eEKzuv5aabtVlmrHnIxtT-hq6HGs49-jiUdNIUsY'
+};
+
+let dadosPlanilha = [];
+
+window.onload = carregarChamados;
+
+document.getElementById('fileIn').addEventListener('change', function(e) {
+  const arquivo = e.target.files[0];
+  if (!arquivo) return;
+  document.getElementById('statusArquivo').innerHTML = 'Lendo...';
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const wb = XLSX.read(ev.target.result, {type: 'binary'});
+    dadosPlanilha = [];
+    wb.SheetNames.forEach(aba => {
+      const dados = XLSX.utils.sheet_to_json(wb.Sheets[aba], {header: 1});
+      dados.slice(1).forEach(row => {
+        if(row[4]) dadosPlanilha.push({aba: aba, costCenter: row[3], costElement: row[4], login: row[5], nomeLogin: row[6], targetLocality: row[8], service: row[9]});
+      });
+    });
+    document.getElementById('btnBuscar').disabled = false;
+    document.getElementById('statusArquivo').innerHTML = `<span class="found">✓ ${dadosPlanilha.length} itens</span>`;
+  };
+  reader.readAsBinaryString(arquivo);
+});
+
+document.getElementById('selDrive').addEventListener('change', function() { document.getElementById('btnCarregarDrive').disabled = !this.value; });
+
+document.getElementById('btnCarregarDrive').addEventListener('click', async function() {
+  const planilhaId = document.getElementById('selDrive').value;
+  const targetId = PLANILHAS_DRIVE[planilhaId];
+  
+  document.getElementById('statusDrive').innerHTML = 'Conectando...';
+  document.getElementById('btnCarregarDrive').disabled = true;
+
+  try {
+    const response = await fetch(`${WEB_APP_URL}?action=getPlanilha&id=${targetId}`);
+    const data = await response.json();
+    
+    dadosPlanilha = data;
+    document.getElementById('btnBuscar').disabled = false;
+    document.getElementById('statusDrive').innerHTML = `<span class="found">✓ ${dadosPlanilha.length} itens</span>`;
+    document.getElementById('statusArquivo').innerHTML = '';
+  } catch (error) {
+    document.getElementById('statusDrive').innerHTML = '<span class="notfound">❌ Erro</span>';
+    alert('Erro ao carregar do Drive. Verifique a permissão do script.');
+  } finally {
+    document.getElementById('btnCarregarDrive').disabled = false;
+  }
+});
+
+document.getElementById('btnBuscar').addEventListener('click', function() {
+  const busca = document.getElementById('patIn').value.trim().toLowerCase();
+  const encontrado = dadosPlanilha.find(item => String(item.costElement).toLowerCase() === busca);
+  
+  if(!encontrado) {
+    document.getElementById('statusBusca').innerHTML = '<span class="notfound">Não encontrado</span>';
+    return;
+  }
+  
+  document.getElementById('resModelo').value = encontrado.service || '';
+  document.getElementById('resDepartamento').value = encontrado.targetLocality || '';
+  document.getElementById('resUsuario').value = encontrado.nomeLogin || '';
+  document.getElementById('resLogin').value = encontrado.login || '';
+  document.getElementById('resCC').value = encontrado.costCenter || '';
+  document.getElementById('resSelo').value = encontrado.costElement || '';
+  
+  document.getElementById('login').value = encontrado.login || '';
+  document.getElementById('cc').value = encontrado.costCenter || '';
+  document.getElementById('statusBusca').innerHTML = `<span class="found">✓ Aba: ${encontrado.aba}</span>`;
+});
+
+async function carregarChamados() {
+  const tbody = document.getElementById('listaChamados');
+  try {
+    const r = await fetch(WEB_APP_URL);
+    const data = await r.json();
+    tbody.innerHTML = '';
+    data.slice(1).reverse().forEach(row => {
+      let dataFormatada = row[0];
+      if(dataFormatada) {
+        const data = new Date(dataFormatada);
+        if(!isNaN(data.getTime())) {
+          const dia = String(data.getDate()).padStart(2, '0');
+          const mes = String(data.getMonth() + 1).padStart(2, '0');
+          const ano = data.getFullYear();
+          dataFormatada = `${dia}/${mes}/${ano}`;
+        }
+      }
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${dataFormatada}</td><td>${row[1]}</td><td>${row[2]}</td><td><button class="btn-txt" onclick='visualizar(${JSON.stringify(row)})'>Ver</button></td>`;
+      tbody.appendChild(tr);
+    });
+  } catch(e) { tbody.innerHTML = '<td colspan="4" style="text-align:center">Erro ao carregar</td>'; }
+}
+
+async function salvarChamado() {
+  const campos = ['titulo','solicitante','login','cc','unidade','departamento','contato','email','previsao','descricao','equipamento'];
+  const params = new URLSearchParams();
+  campos.forEach(id => params.append(id, document.getElementById(id).value));
+  
+  document.getElementById('modalSalvando').style.display = 'flex';
+  try {
+    const r = await fetch(WEB_APP_URL, { method:'POST', body:params });
+    const res = await r.json();
+    if(res.status==='ok') { alert('Salvo!'); campos.forEach(id => document.getElementById(id).value=''); carregarChamados(); }
+  } finally { document.getElementById('modalSalvando').style.display='none'; }
+}
+
+function gerarTXT(){
+  let texto = `Título: ${document.getElementById('titulo').value}\nSolicitante: ${document.getElementById('solicitante').value}\nLogin: ${document.getElementById('login').value}\nEquipamento: ${document.getElementById('equipamento').value}`;
+  document.getElementById('txtPreview').value = texto;
+  document.getElementById('modalTxt').style.display = 'flex';
+}
+
+function visualizar(row) {
+  document.getElementById('txtPreview').value = row.join('\n');
+  document.getElementById('modalTxt').style.display = 'flex';
+}
+function fecharModalTxt(){ document.getElementById('modalTxt').style.display='none'; }
+function copiarTxt(){ document.getElementById('txtPreview').select(); document.execCommand('copy'); alert('Copiado!'); }
+function confirmarTXT(){ 
+  const blob = new Blob([document.getElementById('txtPreview').value], {type:'text/plain'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'chamado.txt';
+  link.click();
+  fecharModalTxt();
+}
+</script>
+</body>
+</html>
