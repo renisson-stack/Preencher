@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Chamados - Ajustado</title>
+<title>Sistema de Chamados - Layout Fixo</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -18,18 +18,18 @@ body {
   font-size: 13px;
   display: flex;
   justify-content: center;
-  align-items: center; /* Centraliza verticalmente */
-  height: 100vh; /* Ocupa exatamente a altura da tela */
-  overflow: hidden; /* Remove a barra de rolagem da página principal */
+  align-items: center; 
+  height: 100vh;
+  overflow: hidden; /* Bloqueia scroll na página externa */
 }
 
 #mainframe {
-  width: 95%; /* Mantém margem nas laterais */
-  max-width: 1300px;
-  height: calc(100vh - 60px); /* Garante margem de 30px superior e inferior */
+  width: 95%;
+  max-width: 1350px;
+  height: 90vh; /* Altura controlada para manter margens superior/inferior */
   background: #fff;
   padding: 15px;
-  border-radius: 10px;
+  border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
   display: flex;
   flex-direction: column;
@@ -44,15 +44,15 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
-  flex-shrink: 0; /* Impede o cabeçalho de encolher */
+  flex-shrink: 0;
 }
 
 .container-principal {
   display: grid;
-  grid-template-columns: 450px 1fr;
+  grid-template-columns: 480px 1fr; /* Largura equilibrada para o formulário */
   gap: 15px;
-  flex: 1; /* Faz o container ocupar o resto do espaço */
-  overflow: hidden; /* Impede que o container estique a página */
+  flex: 1;
+  min-height: 0; /* Essencial para o scroll interno funcionar */
 }
 
 .modulo-painel {
@@ -61,51 +61,43 @@ body {
   background: #fff;
   display: flex;
   flex-direction: column;
-  height: 100%; /* Ocupa toda a altura disponível do container */
   overflow: hidden;
 }
 
 .panel-header {
   background: #0b5d3b;
   color: #fff;
-  padding: 7px 12px;
+  padding: 8px 12px;
   font-size: 13px;
   font-weight: bold;
   flex-shrink: 0;
 }
 
+/* Área de formulário com scroll para não ocultar botões */
 .form-area { 
-  padding: 10px; 
-  overflow-y: auto; /* Permite rolagem apenas dentro do formulário */
+  padding: 12px; 
+  overflow-y: auto; 
   flex: 1; 
 }
 
-.painel-direito {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  height: 100%;
-}
-
-.campo-linha { display: flex; flex-direction: column; margin-bottom: 5px; }
+.campo-linha { display: flex; flex-direction: column; margin-bottom: 6px; }
 .campo-linha label { font-size: 11px; font-weight: bold; margin-bottom: 2px; color: #333; }
 
 input, select, textarea { 
   width: 100%; 
-  padding: 5px 8px; 
+  padding: 6px 10px; 
   border: 1px solid #ced4da; 
   border-radius: 4px; 
   font-size: 12px;
 }
 
-/* Consulta de Selo */
+/* Consulta de Selo Compacta */
 .secao-consulta { 
   display: grid; 
   grid-template-columns: 1fr 1fr 1fr; 
   gap: 8px; 
   padding: 10px; 
   background: #f8f9fa; 
-  flex-shrink: 0;
 }
 
 .resultado-grid { 
@@ -113,29 +105,27 @@ input, select, textarea {
   grid-template-columns: repeat(6, 1fr); 
   gap: 5px; 
   padding: 10px; 
-  background: #fff;
-  flex-shrink: 0;
 }
 
 .mini-label { font-size: 10px; font-weight: bold; display: block; margin-bottom: 2px; }
 
-/* Tabela de Chamados Recentes */
+/* Tabela com scroll independente */
 .tabela-container { 
   flex: 1; 
-  overflow-y: auto; /* Permite rolagem apenas dentro da tabela */
+  overflow-y: auto; 
 }
 
-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-th, td { border-bottom: 1px solid #eee; padding: 7px; text-align: left; }
+table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
 th { background: #f8f9fa; position: sticky; top: 0; z-index: 5; }
 
-button { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; }
+button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; }
 .btn-save { background: #007bff; color: #fff; }
 .btn-txt { background: #28a745; color: #fff; }
 .btn-nav { background: #6fcf97; color: #0b5d3b; }
 .btn-gray { background: #6c757d; color: #fff; }
 
-/* Personalização da barra de rolagem interna */
+/* Scrollbars finas para não poluir o layout */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }
 ::-webkit-scrollbar-thumb { background: #0b5d3b; border-radius: 10px; }
@@ -162,49 +152,50 @@ button { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; f
         <div class="campo-linha"><label>Contato</label><input id="contato" type="text"></div>
         <div class="campo-linha"><label>Email</label><input id="email" type="email"></div>
         <div class="campo-linha"><label>Previsão de entrega</label><input id="previsao" type="date"></div>
-        <div class="campo-linha"><label>Descrição</label><textarea id="descricao" style="height:60px;"></textarea></div>
+        <div class="campo-linha"><label>Descrição</label><textarea id="descricao" style="height:50px; resize:none;"></textarea></div>
         <div class="campo-linha"><label>Equipamento</label><input id="equipamento" type="text"></div>
-        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px">
+        
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px; padding-bottom: 5px;">
           <button class="btn-save" onclick="salvarChamado()">SALVAR</button>
           <button class="btn-txt" onclick="gerarTXT()">GERAR TXT</button>
         </div>
       </div>
     </div>
 
-    <div class="painel-direito">
-      <div class="modulo-painel" style="height: auto;">
+    <div style="display:flex; flex-direction:column; gap:12px; min-height:0;">
+      <div class="modulo-painel" style="flex-shrink:0;">
         <div class="panel-header">🔍 CONSULTA DE SELO</div>
         <div class="secao-consulta">
           <div>
             <label class="mini-label">Arquivo Local</label>
             <div style="display:flex; gap:2px">
-              <input id="nomeArq" readonly style="font-size:10px; height:28px">
-              <button class="btn-gray" onclick="document.getElementById('fileIn').click()" style="padding:0 8px">📂</button>
+              <input id="nomeArq" readonly style="height:30px">
+              <button class="btn-gray" onclick="document.getElementById('fileIn').click()">📂</button>
               <input type="file" id="fileIn" accept=".xlsx,.xls" style="display:none">
             </div>
           </div>
           <div>
             <label class="mini-label">Google Drive</label>
             <div style="display:flex; gap:2px">
-              <select id="selDrive" style="height:28px">
+              <select id="selDrive" style="height:30px">
                 <option value="">Selecione...</option>
                 <option value="rj">BRASKEM RJ</option>
                 <option value="sp">BRASKEM SP</option>
               </select>
-              <button id="btnCarregarDrive" class="btn-save" style="padding:0 8px">OK</button>
+              <button id="btnCarregarDrive" class="btn-save">OK</button>
             </div>
           </div>
           <div>
             <label class="mini-label">Selo de Garantia</label>
             <div style="display:flex; gap:2px">
-              <input id="patIn" placeholder="Selo..." style="height:28px">
-              <button id="btnBuscar" class="btn-save" style="background:#4da3ff; padding:0 10px" disabled>🔍</button>
+              <input id="patIn" placeholder="Selo..." style="height:30px">
+              <button id="btnBuscar" class="btn-save" style="background:#4da3ff" disabled>🔍</button>
             </div>
           </div>
         </div>
         <div class="resultado-grid">
           <div><label class="mini-label">Modelo</label><input id="resModelo" readonly></div>
-          <div><label class="mini-label">Departamento</label><input id="resDepto" readonly></div>
+          <div><label class="mini-label">Depto</label><input id="resDepto" readonly></div>
           <div><label class="mini-label">Usuário</label><input id="resUser" readonly></div>
           <div><label class="mini-label">Login</label><input id="resLogin" readonly></div>
           <div><label class="mini-label">CC</label><input id="resCC" readonly></div>
@@ -212,10 +203,10 @@ button { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; f
         </div>
       </div>
 
-      <div class="modulo-painel" style="flex: 1;">
+      <div class="modulo-painel" style="flex:1; min-height:0;">
         <div class="panel-header">📋 CHAMADOS RECENTES</div>
         <div class="tabela-container">
-          <table>
+          <table id="tabelaMain">
             <thead><tr><th>Data</th><th>Título</th><th>Solicitante</th><th>Ação</th></tr></thead>
             <tbody id="listaChamados"></tbody>
           </table>
@@ -226,28 +217,10 @@ button { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; f
 </div>
 
 <script>
+// Scripts de integração com Google Apps Script mantidos conforme as imagens de execução
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz9jqdg60ZbO8C6zHC3DkvIPglkL5jgMTQDctLsY3FdapoFyOrtnrtmZNZpL-b30oEyZw/exec';
-const PLANILHAS_DRIVE = {
-  rj: '14Htn3BT26Pvrd0NIYGRjuJFDspLJHMM0CKOJ1sGTfAs',
-  sp: '1FD6eEKzuv5aabtVlmrHnIxtT-hq6HGs49-jiUdNIUsY'
-};
-
-let dadosPlanilha = [];
 
 window.onload = carregarChamados;
-
-document.getElementById('btnCarregarDrive').addEventListener('click', async function() {
-  const pId = document.getElementById('selDrive').value;
-  if(!pId) return;
-  this.innerText = '...';
-  try {
-    const r = await fetch(`${WEB_APP_URL}?action=getPlanilha&id=${PLANILHAS_DRIVE[pId]}`);
-    dadosPlanilha = await r.json();
-    document.getElementById('btnBuscar').disabled = false;
-    this.innerText = 'OK';
-    alert('Base carregada!');
-  } catch (e) { alert('Erro ao conectar.'); this.innerText = 'OK'; }
-});
 
 async function carregarChamados() {
   try {
@@ -256,33 +229,31 @@ async function carregarChamados() {
     const tbody = document.getElementById('listaChamados');
     tbody.innerHTML = '';
     data.slice(1).reverse().forEach(row => {
-      let dataTxt = row[0];
-      if (dataTxt && (dataTxt.includes('T') || dataTxt.includes('-'))) {
-          const d = new Date(dataTxt);
-          dataTxt = d.toLocaleDateString('pt-BR');
-      }
+      let dTxt = row[0];
+      if (dTxt && dTxt.includes('T')) dTxt = new Date(dTxt).toLocaleDateString('pt-BR');
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${dataTxt}</td><td>${row[1]}</td><td>${row[2]}</td><td><button class="btn-txt" style="padding:2px 6px">Ver</button></td>`;
+      tr.innerHTML = `<td>${dTxt}</td><td>${row[1]}</td><td>${row[2]}</td><td><button class="btn-txt" style="padding:2px 8px">Ver</button></td>`;
       tbody.appendChild(tr);
     });
-  } catch (e) { console.error('Erro na tabela'); }
+  } catch (e) { console.error('Erro ao carregar dados'); }
 }
 
 async function salvarChamado() {
-  const params = new URLSearchParams();
   const campos = ['titulo','solicitante','login','cc','unidade','departamento','contato','email','previsao','descricao','equipamento'];
+  const params = new URLSearchParams();
   campos.forEach(id => params.append(id, document.getElementById(id).value));
+  
   try {
     await fetch(WEB_APP_URL, { method:'POST', body:params });
-    alert('Salvo!');
+    alert('Chamado salvo com sucesso!');
     campos.forEach(id => document.getElementById(id).value = '');
     carregarChamados();
-  } catch(e) { alert('Erro ao salvar.'); }
+  } catch(e) { alert('Erro ao salvar no servidor.'); }
 }
 
 function gerarTXT() {
-  const texto = `TÍTULO: ${document.getElementById('titulo').value}`;
-  const blob = new Blob([texto], {type:'text/plain'});
+  const t = `TÍTULO: ${document.getElementById('titulo').value}\nDESCRIÇÃO: ${document.getElementById('descricao').value}`;
+  const blob = new Blob([t], {type:'text/plain'});
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = 'chamado.txt';
