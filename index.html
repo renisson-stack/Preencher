@@ -2,37 +2,33 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no">
-<title>Sistema de Chamados - Estável</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Chamados</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
-* { 
-  box-sizing: border-box; 
-  -webkit-text-size-adjust: 100%;
-  touch-action: manipulation; /* Melhora resposta ao toque sem zoom */
-}
+* { box-sizing: border-box; }
 
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
   margin: 0;
-  padding: 0;
+  padding: 10px;
   background: #e9ecef;
+  font-size: 13px; /* Fonte menor para evitar o aspecto "aumentado" */
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width: 100vw;
   overflow: hidden;
 }
 
 #mainframe {
-  width: 98%;
+  width: 100%;
   max-width: 1600px;
-  height: 96vh;
+  height: 95vh;
   background: #fff;
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   display: flex;
@@ -42,33 +38,24 @@ body {
 .header-bar {
   background: #0b5d3b;
   color: #fff;
-  padding: 10px 15px;
+  padding: 8px 15px;
   border-radius: 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
-  flex-shrink: 0;
 }
 
 .container-principal {
   display: grid;
-  grid-template-columns: 600px 1fr; /* Coluna formulário fixa */
-  gap: 15px;
+  grid-template-columns: 550px 1fr; /* Coluna levemente menor para ganhar espaço */
+  gap: 12px;
   flex: 1;
   overflow: hidden;
 }
 
-.painel-direito {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  height: 100%;
-  overflow: hidden;
-}
-
 .modulo-painel {
-  border: 2px solid #0b5d3b;
+  border: 1px solid #0b5d3b;
   border-radius: 6px;
   background: #fff;
   display: flex;
@@ -79,31 +66,31 @@ body {
 .panel-header {
   background: #0b5d3b;
   color: #fff;
-  padding: 8px 12px;
-  font-size: 14px;
+  padding: 6px 12px;
+  font-size: 13px;
   font-weight: bold;
 }
 
-/* Prevenção de Zoom: Fontes de input em 16px no mobile impedem o zoom do sistema */
-input, select, textarea { 
-  width: 100%; 
-  padding: 6px 10px; 
-  border: 1px solid #ced4da; 
-  border-radius: 4px; 
-  font-size: 16px; 
-  background-color: #fff;
-}
-
-.campo-linha { display: flex; flex-direction: column; margin-bottom: 5px; }
+.form-area { padding: 8px; overflow-y: auto; flex: 1; }
+.campo-linha { display: flex; flex-direction: column; margin-bottom: 4px; }
 .campo-linha label { font-size: 12px; font-weight: bold; margin-bottom: 2px; color: #333; }
 
-/* Layout Consulta Selo Original */
+input, select, textarea { 
+  width: 100%; 
+  padding: 4px 8px; 
+  border: 1px solid #ced4da; 
+  border-radius: 4px; 
+  font-size: 13px; /* Fonte compacta */
+}
+
+/* Layout Consulta Selo - Fiel ao original */
 .secao-consulta { 
   display: grid; 
-  grid-template-columns: 1fr 1fr 1fr; 
+  grid-template-columns: 1.2fr 1fr 1fr; 
   gap: 8px; 
   padding: 10px; 
   background: #f8f9fa; 
+  border-bottom: 1px solid #eee;
 }
 
 .resultado-grid { 
@@ -111,25 +98,25 @@ input, select, textarea {
   grid-template-columns: repeat(6, 1fr); 
   gap: 5px; 
   padding: 10px; 
-  background: #f8f9fa;
+  background: #fff;
 }
 
-.mini-label { font-size: 11px; font-weight: bold; margin-bottom: 2px; }
+.mini-label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px; }
 
 .tabela-container { flex: 1; overflow-y: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
-th { background: #f8f9fa; position: sticky; top: 0; z-index: 10; }
+table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+th, td { border-bottom: 1px solid #eee; padding: 6px; text-align: left; }
+th { background: #f8f9fa; position: sticky; top: 0; }
 
-button { padding: 8px 14px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; }
+button { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; }
 .btn-save { background: #007bff; color: #fff; }
 .btn-txt { background: #28a745; color: #fff; }
 .btn-nav { background: #6fcf97; color: #0b5d3b; }
-.btn-gray { background: #6c757d; color: #fff; padding: 4px 8px; }
+.btn-gray { background: #6c757d; color: #fff; }
 
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
   .container-principal { grid-template-columns: 1fr; overflow-y: auto; }
-  body { overflow-y: auto; height: auto; }
+  body { height: auto; overflow: auto; }
   #mainframe { height: auto; }
 }
 </style>
@@ -138,15 +125,15 @@ button { padding: 8px 14px; border-radius: 4px; border: none; cursor: pointer; f
 
 <div id="mainframe">
   <div class="header-bar">
-    <h2 style="margin:0; font-size:18px;">SISTEMA DE CHAMADOS</h2>
+    <h2 style="margin:0; font-size:16px;">SISTEMA DE CHAMADOS</h2>
     <button class="btn-nav" onclick="window.open('https://docs.google.com/spreadsheets/d/1142MfU41euisLbUfpOJz_xEffv4YndQeFlqNatGf1kU/edit', '_blank')">📊 ABRIR PLANILHA</button>
   </div>
 
   <div class="container-principal">
     <div class="modulo-painel">
       <div class="panel-header">📝 NOVO CHAMADO</div>
-      <div class="form-area" style="padding:10px; overflow-y:auto;">
-        <div class="campo-linha"><label>Título</label><input id="titulo" type="text"></div>
+      <div class="form-area">
+        <div class="campo-linha"><label>Título</label><input id="titulo" type="text" placeholder="Ex: BRASKEM - RJ - INC1051857..."></div>
         <div class="campo-linha"><label>Solicitante</label><input id="solicitante" type="text"></div>
         <div class="campo-linha"><label>Login</label><input id="login" type="text"></div>
         <div class="campo-linha"><label>CC</label><input id="cc" type="text"></div>
@@ -155,43 +142,43 @@ button { padding: 8px 14px; border-radius: 4px; border: none; cursor: pointer; f
         <div class="campo-linha"><label>Contato</label><input id="contato" type="text"></div>
         <div class="campo-linha"><label>Email</label><input id="email" type="email"></div>
         <div class="campo-linha"><label>Previsão de entrega</label><input id="previsao" type="date"></div>
-        <div class="campo-linha"><label>Descrição</label><textarea id="descricao" style="height:50px;"></textarea></div>
+        <div class="campo-linha"><label>Descrição</label><textarea id="descricao" style="height:40px;"></textarea></div>
         <div class="campo-linha"><label>Equipamento</label><input id="equipamento" type="text"></div>
-        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px">
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px">
           <button class="btn-save" onclick="salvarChamado()">SALVAR</button>
           <button class="btn-txt" onclick="gerarTXT()">GERAR TXT</button>
         </div>
       </div>
     </div>
 
-    <div class="painel-direito">
+    <div class="painel-direito" style="display:flex; flex-direction:column; gap:12px; overflow:hidden;">
       <div class="modulo-painel">
         <div class="panel-header">🔍 CONSULTA DE SELO</div>
         <div class="secao-consulta">
           <div>
             <label class="mini-label">Arquivo Local</label>
             <div style="display:flex; gap:2px">
-              <input id="nomeArq" readonly placeholder="Nenhum..." style="font-size:12px; height:32px">
-              <button class="btn-gray" onclick="document.getElementById('fileIn').click()">📂</button>
+              <input id="nomeArq" readonly placeholder="Nenhum arquivo" style="background:#f9f9f9">
+              <button class="btn-gray" onclick="document.getElementById('fileIn').click()" style="padding:4px 8px">📂</button>
               <input type="file" id="fileIn" accept=".xlsx,.xls" style="display:none">
             </div>
           </div>
           <div>
             <label class="mini-label">Google Drive</label>
             <div style="display:flex; gap:2px">
-              <select id="selDrive" style="font-size:12px; height:32px">
+              <select id="selDrive">
                 <option value="">Selecione...</option>
                 <option value="rj">BRASKEM RJ</option>
                 <option value="sp">BRASKEM SP</option>
               </select>
-              <button id="btnCarregarDrive" class="btn-save" style="font-size:11px; padding:0 8px">OK</button>
+              <button id="btnCarregarDrive" class="btn-save" style="background:#007bff; padding:4px 8px">Carregar</button>
             </div>
           </div>
           <div>
             <label class="mini-label">Selo de Garantia</label>
             <div style="display:flex; gap:2px">
-              <input id="patIn" placeholder="Selo..." style="height:32px">
-              <button id="btnBuscar" class="btn-save" style="background:#4da3ff; padding:0 10px" disabled>🔍</button>
+              <input id="patIn" placeholder="Digite o selo">
+              <button id="btnBuscar" class="btn-save" style="background:#4da3ff; padding:4px 8px" disabled>🔍</button>
             </div>
           </div>
         </div>
@@ -205,12 +192,12 @@ button { padding: 8px 14px; border-radius: 4px; border: none; cursor: pointer; f
         </div>
       </div>
 
-      <div class="modulo-painel" style="flex:1;">
+      <div class="modulo-painel" style="flex:1; min-height:0;">
         <div class="panel-header">📋 CHAMADOS RECENTES</div>
         <div class="tabela-container">
           <table>
             <thead><tr><th>Data</th><th>Título</th><th>Solicitante</th><th>Ação</th></tr></thead>
-            <tbody id="listaChamados"><tr><td colspan="4" style="text-align:center">Buscando dados...</td></tr></tbody>
+            <tbody id="listaChamados"><tr><td colspan="4" style="text-align:center">Carregando...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -219,6 +206,7 @@ button { padding: 8px 14px; border-radius: 4px; border: none; cursor: pointer; f
 </div>
 
 <script>
+// Mantendo as mesmas funções de script anteriores para salvar e carregar dados
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz9jqdg60ZbO8C6zHC3DkvIPglkL5jgMTQDctLsY3FdapoFyOrtnrtmZNZpL-b30oEyZw/exec';
 const PLANILHAS_DRIVE = {
   rj: '14Htn3BT26Pvrd0NIYGRjuJFDspLJHMM0CKOJ1sGTfAs',
@@ -229,7 +217,6 @@ let dadosPlanilha = [];
 
 window.onload = carregarChamados;
 
-// Drive - Corrigido para carregar corretamente
 document.getElementById('btnCarregarDrive').addEventListener('click', async function() {
   const pId = document.getElementById('selDrive').value;
   if(!pId) return;
@@ -238,52 +225,45 @@ document.getElementById('btnCarregarDrive').addEventListener('click', async func
     const r = await fetch(`${WEB_APP_URL}?action=getPlanilha&id=${PLANILHAS_DRIVE[pId]}`);
     dadosPlanilha = await r.json();
     document.getElementById('btnBuscar').disabled = false;
-    this.innerText = 'OK';
-    alert('Base carregada com sucesso!');
-  } catch (e) { alert('Erro ao carregar do Drive.'); this.innerText = 'OK'; }
+    this.innerText = 'Carregar';
+    alert('Dados carregados!');
+  } catch (e) { alert('Erro de conexão.'); this.innerText = 'Carregar'; }
 });
 
-// Lista com Data Formatada APENAS DD/MM/AAAA
 async function carregarChamados() {
   try {
     const r = await fetch(WEB_APP_URL);
     const data = await r.json();
     const tbody = document.getElementById('listaChamados');
     tbody.innerHTML = '';
-    
     data.slice(1).reverse().forEach(row => {
-      let dataFinal = row[0];
-      // Converte data ISO ou string para padrão brasileiro sem horas
-      if (dataFinal && (dataFinal.includes('T') || dataFinal.includes('-'))) {
-          const d = new Date(dataFinal);
-          const dia = String(d.getDate()).padStart(2, '0');
-          const mes = String(d.getMonth() + 1).padStart(2, '0');
-          const ano = d.getFullYear();
-          dataFinal = `${dia}/${mes}/${ano}`;
+      let dataTxt = row[0];
+      if (dataTxt && dataTxt.includes('T')) {
+          const d = new Date(dataTxt);
+          dataTxt = d.toLocaleDateString('pt-BR');
       }
-      
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${dataFinal}</td><td>${row[1]}</td><td>${row[2]}</td><td><button class="btn-txt" style="padding:2px 8px">Ver</button></td>`;
+      tr.innerHTML = `<td>${dataTxt}</td><td>${row[1]}</td><td>${row[2]}</td><td><button class="btn-txt" style="padding:2px 6px; font-size:11px">Ver</button></td>`;
       tbody.appendChild(tr);
     });
-  } catch (e) { console.error('Erro ao carregar tabela'); }
+  } catch (e) { console.error(e); }
 }
 
 async function salvarChamado() {
-  const params = new URLSearchParams();
   const campos = ['titulo','solicitante','login','cc','unidade','departamento','contato','email','previsao','descricao','equipamento'];
+  const params = new URLSearchParams();
   campos.forEach(id => params.append(id, document.getElementById(id).value));
   try {
     await fetch(WEB_APP_URL, { method:'POST', body:params });
-    alert('Chamado salvo!');
+    alert('Salvo!');
     campos.forEach(id => document.getElementById(id).value = '');
     carregarChamados();
   } catch(e) { alert('Erro ao salvar.'); }
 }
 
 function gerarTXT() {
-  const texto = `CHAMADO: ${document.getElementById('titulo').value}\nDESCRIÇÃO: ${document.getElementById('descricao').value}`;
-  const blob = new Blob([texto], {type:'text/plain'});
+  const t = `TÍTULO: ${document.getElementById('titulo').value}\nDESC: ${document.getElementById('descricao').value}`;
+  const blob = new Blob([t], {type:'text/plain'});
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = 'chamado.txt';
