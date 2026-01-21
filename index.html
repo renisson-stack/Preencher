@@ -49,7 +49,7 @@ body {
 
 .container-principal {
   display: grid;
-  grid-template-columns: 480px 1fr;
+  grid-template-columns: 600px 1fr;
   gap: 15px;
   flex: 1;
   min-height: 0;
@@ -148,7 +148,7 @@ button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; f
     <div class="modulo-painel">
       <div class="panel-header">📝 NOVO CHAMADO</div>
       <div class="form-area">
-        <div class="campo-linha"><label>Título</label><input id="titulo" type="text" placeholder="Ex: BRASKEM - RJ - INC..."></div>
+        <div class="campo-linha"><label>Título</label><input id="titulo" type="text" placeholder="BRASKEM - SP - INC1072259 - PROGRAMAÇÃO DE RÁDIO - BR SP MAUA PE7 - MANUTENÇÃO"></div>
         <div class="campo-linha"><label>Solicitante</label><input id="solicitante" type="text"></div>
         <div class="campo-linha"><label>Login</label><input id="login" type="text"></div>
         <div class="campo-linha"><label>CC</label><input id="cc" type="text"></div>
@@ -382,8 +382,17 @@ async function carregarChamados() {
 // ========== SALVAR CHAMADO ==========
 async function salvarChamado() {
   const campos = ['titulo','solicitante','login','cc','unidade','departamento','contato','email','previsao','descricao','equipamento'];
+  
+  // Validação básica
+  if (!document.getElementById('titulo').value.trim()) {
+    alert('Por favor, preencha o título do chamado');
+    return;
+  }
+  
   const params = new URLSearchParams();
   campos.forEach(id => params.append(id, document.getElementById(id).value));
+  
+  document.getElementById('modalSalvando').style.display = 'flex';
   
   try {
     await fetch(WEB_APP_URL, { method:'POST', body:params });
@@ -392,31 +401,72 @@ async function salvarChamado() {
     carregarChamados();
   } catch(e) { 
     alert('Erro ao salvar no servidor.'); 
+  } finally {
+    document.getElementById('modalSalvando').style.display = 'none';
   }
 }
 
 // ========== GERAR TXT ==========
 function gerarTXT() {
-  const t = `TÍTULO: ${document.getElementById('titulo').value}\nDESCRIÇÃO: ${document.getElementById('descricao').value}`;
-  const blob = new Blob([t], {type:'text/plain'});
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'chamado.txt';
-  link.click();
+  const titulo = document.getElementById('titulo').value;
+  const solicitante = document.getElementById('solicitante').value;
+  const login = document.getElementById('login').value;
+  const cc = document.getElementById('cc').value;
+  const unidade = document.getElementById('unidade').value;
+  const departamento = document.getElementById('departamento').value;
+  const contato = document.getElementById('contato').value;
+  const email = document.getElementById('email').value;
+  const previsao = document.getElementById('previsao').value;
+  const descricao = document.getElementById('descricao').value;
+  const equipamento = document.getElementById('equipamento').value;
+  
+  // Formatar data para DD/MM/AA (padrão BR simplificado)
+  let previsaoFormatada = '';
+  if (previsao) {
+    const [ano, mes, dia] = previsao.split('-');
+    const anoAbreviado = ano.slice(-2); // Pega os 2 últimos dígitos do ano
+    previsaoFormatada = `${dia}/${mes}/${anoAbreviado}`;
+  }
+  
+  const texto = `${titulo}
+Solicitante: ${solicitante}
+Login: ${login}
+Centro de custo: ${cc}
+Unidade: ${unidade}
+Departamento: ${departamento}
+Contato: ${contato}
+Email: ${email}
+Previsão de entrega: ${previsaoFormatada}
+Descrição: ${descricao}
+Equipamento: ${equipamento}`;
+  
+  document.getElementById('txtPreview').value = texto;
+  document.getElementById('modalTxt').style.display = 'flex';
 }
 
 // ========== FUNÇÕES DO MODAL ==========
 function visualizarChamado(row) {
-  const texto = `Data: ${row[0] || ''}
-Título: ${row[1] || ''}
+  // Formatar data de previsão
+  let previsaoFormatada = row[9] || '';
+  if (previsaoFormatada) {
+    const data = new Date(previsaoFormatada);
+    if (!isNaN(data.getTime())) {
+      const dia = String(data.getDate()).padStart(2, '0');
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const ano = String(data.getFullYear()).slice(-2); // Pega os 2 últimos dígitos
+      previsaoFormatada = `${dia}/${mes}/${ano}`;
+    }
+  }
+  
+  const texto = `${row[1] || ''}
 Solicitante: ${row[2] || ''}
 Login: ${row[3] || ''}
-CC: ${row[4] || ''}
+Centro de custo: ${row[4] || ''}
 Unidade: ${row[5] || ''}
 Departamento: ${row[6] || ''}
 Contato: ${row[7] || ''}
 Email: ${row[8] || ''}
-Previsão: ${row[9] || ''}
+Previsão de entrega: ${previsaoFormatada}
 Descrição: ${row[10] || ''}
 Equipamento: ${row[11] || ''}`;
   
