@@ -20,13 +20,13 @@ body {
   justify-content: center;
   align-items: center; 
   height: 100vh;
-  overflow: hidden; /* Bloqueia scroll na página externa */
+  overflow: hidden;
 }
 
 #mainframe {
   width: 95%;
   max-width: 1350px;
-  height: 90vh; /* Altura controlada para manter margens superior/inferior */
+  height: 90vh;
   background: #fff;
   padding: 15px;
   border-radius: 8px;
@@ -49,10 +49,10 @@ body {
 
 .container-principal {
   display: grid;
-  grid-template-columns: 480px 1fr; /* Largura equilibrada para o formulário */
+  grid-template-columns: 480px 1fr;
   gap: 15px;
   flex: 1;
-  min-height: 0; /* Essencial para o scroll interno funcionar */
+  min-height: 0;
 }
 
 .modulo-painel {
@@ -73,7 +73,6 @@ body {
   flex-shrink: 0;
 }
 
-/* Área de formulário com scroll para não ocultar botões */
 .form-area { 
   padding: 12px; 
   overflow-y: auto; 
@@ -91,7 +90,6 @@ input, select, textarea {
   font-size: 12px;
 }
 
-/* Consulta de Selo Compacta */
 .secao-consulta { 
   display: grid; 
   grid-template-columns: 1fr 1fr 1fr; 
@@ -109,7 +107,6 @@ input, select, textarea {
 
 .mini-label { font-size: 10px; font-weight: bold; display: block; margin-bottom: 2px; }
 
-/* Tabela com scroll independente */
 .tabela-container { 
   flex: 1; 
   overflow-y: auto; 
@@ -125,10 +122,18 @@ button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; f
 .btn-nav { background: #6fcf97; color: #0b5d3b; }
 .btn-gray { background: #6c757d; color: #fff; }
 
-/* Scrollbars finas para não poluir o layout */
+.status-msg { font-size: 11px; margin-top: 3px; }
+.found { color: green; font-weight: bold; }
+.notfound { color: #c0392b; font-weight: bold; }
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }
 ::-webkit-scrollbar-thumb { background: #0b5d3b; border-radius: 10px; }
+
+@keyframes spin { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
 </style>
 </head>
 <body>
@@ -152,7 +157,7 @@ button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; f
         <div class="campo-linha"><label>Contato</label><input id="contato" type="text"></div>
         <div class="campo-linha"><label>Email</label><input id="email" type="email"></div>
         <div class="campo-linha"><label>Previsão de entrega</label><input id="previsao" type="date"></div>
-        <div class="campo-linha"><label>Descrição</label><textarea id="descricao" style="height:50px; resize:none;"></textarea></div>
+        <div class="campo-linha"><label>Descrição</label><textarea id="descricao" style="height:40px; resize:none;"></textarea></div>
         <div class="campo-linha"><label>Equipamento</label><input id="equipamento" type="text"></div>
         
         <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px; padding-bottom: 5px;">
@@ -169,10 +174,11 @@ button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; f
           <div>
             <label class="mini-label">Arquivo Local</label>
             <div style="display:flex; gap:2px">
-              <input id="nomeArq" readonly style="height:30px">
+              <input id="nomeArq" readonly style="height:30px" placeholder="Nenhum arquivo">
               <button class="btn-gray" onclick="document.getElementById('fileIn').click()">📂</button>
               <input type="file" id="fileIn" accept=".xlsx,.xls" style="display:none">
             </div>
+            <div id="statusArquivo" class="status-msg"></div>
           </div>
           <div>
             <label class="mini-label">Google Drive</label>
@@ -182,8 +188,9 @@ button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; f
                 <option value="rj">BRASKEM RJ</option>
                 <option value="sp">BRASKEM SP</option>
               </select>
-              <button id="btnCarregarDrive" class="btn-save">OK</button>
+              <button id="btnCarregarDrive" class="btn-save" disabled>OK</button>
             </div>
+            <div id="statusDrive" class="status-msg"></div>
           </div>
           <div>
             <label class="mini-label">Selo de Garantia</label>
@@ -191,6 +198,7 @@ button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; f
               <input id="patIn" placeholder="Selo..." style="height:30px">
               <button id="btnBuscar" class="btn-save" style="background:#4da3ff" disabled>🔍</button>
             </div>
+            <div id="statusBusca" class="status-msg"></div>
           </div>
         </div>
         <div class="resultado-grid">
@@ -216,28 +224,162 @@ button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; f
   </div>
 </div>
 
+<div id="modalTxt" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:#fff;width:90%;max-width:500px;padding:15px;border-radius:8px;border:2px solid #0b5d3b;">
+    <h3 style="margin-top:0;color:#0b5d3b;">Pré-visualização do Chamado</h3>
+    <textarea id="txtPreview" style="width:100%;height:250px;font-family:monospace;font-size:12px;padding:10px;border:1px solid #ccc;border-radius:4px;" readonly></textarea>
+    <div style="text-align:right;margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn-gray" onclick="fecharModalTxt()">Fechar</button>
+      <button class="btn-txt" onclick="copiarTxt()">Copiar</button>
+      <button class="btn-save" onclick="baixarTXT()">Baixar TXT</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalSalvando" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:30px;border-radius:8px;text-align:center;">
+    <div style="width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #007bff;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px;"></div>
+    <p style="font-size:13px">Processando...</p>
+  </div>
+</div>
+
 <script>
-// Scripts de integração com Google Apps Script mantidos conforme as imagens de execução
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz9jqdg60ZbO8C6zHC3DkvIPglkL5jgMTQDctLsY3FdapoFyOrtnrtmZNZpL-b30oEyZw/exec';
+
+const PLANILHAS_DRIVE = {
+  rj: '14Htn3BT26Pvrd0NIYGRjuJFDspLJHMM0CKOJ1sGTfAs',
+  sp: '1FD6eEKzuv5aabtVlmrHnIxtT-hq6HGs49-jiUdNIUsY'
+};
+
+let dadosPlanilha = [];
 
 window.onload = carregarChamados;
 
+// ========== CARREGAR ARQUIVO LOCAL ==========
+document.getElementById('fileIn').addEventListener('change', function(e) {
+  const arquivo = e.target.files[0];
+  if (!arquivo) return;
+  
+  document.getElementById('statusArquivo').innerHTML = 'Lendo...';
+  document.getElementById('nomeArq').value = arquivo.name;
+  
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const wb = XLSX.read(ev.target.result, {type: 'binary'});
+    dadosPlanilha = [];
+    
+    wb.SheetNames.forEach(aba => {
+      const dados = XLSX.utils.sheet_to_json(wb.Sheets[aba], {header: 1});
+      dados.slice(1).forEach(row => {
+        if(row[4]) {
+          dadosPlanilha.push({
+            aba: aba,
+            costCenter: row[3],
+            costElement: row[4],
+            login: row[5],
+            nomeLogin: row[6],
+            targetLocality: row[8],
+            service: row[9]
+          });
+        }
+      });
+    });
+    
+    document.getElementById('btnBuscar').disabled = false;
+    document.getElementById('statusArquivo').innerHTML = `<span class="found">✓ ${dadosPlanilha.length} itens</span>`;
+  };
+  reader.readAsBinaryString(arquivo);
+});
+
+// ========== CARREGAR DO GOOGLE DRIVE ==========
+document.getElementById('selDrive').addEventListener('change', function() {
+  document.getElementById('btnCarregarDrive').disabled = !this.value;
+});
+
+document.getElementById('btnCarregarDrive').addEventListener('click', async function() {
+  const planilhaId = document.getElementById('selDrive').value;
+  const targetId = PLANILHAS_DRIVE[planilhaId];
+  
+  document.getElementById('statusDrive').innerHTML = 'Conectando...';
+  document.getElementById('btnCarregarDrive').disabled = true;
+
+  try {
+    const response = await fetch(`${WEB_APP_URL}?action=getPlanilha&id=${targetId}`);
+    const data = await response.json();
+    
+    dadosPlanilha = data;
+    document.getElementById('btnBuscar').disabled = false;
+    document.getElementById('statusDrive').innerHTML = `<span class="found">✓ ${dadosPlanilha.length} itens</span>`;
+    document.getElementById('statusArquivo').innerHTML = '';
+    document.getElementById('nomeArq').value = `Drive: ${planilhaId.toUpperCase()}`;
+  } catch (error) {
+    document.getElementById('statusDrive').innerHTML = '<span class="notfound">❌ Erro</span>';
+    alert('Erro ao carregar do Drive. Verifique a permissão do script.');
+  } finally {
+    document.getElementById('btnCarregarDrive').disabled = false;
+  }
+});
+
+// ========== BUSCAR SELO ==========
+document.getElementById('btnBuscar').addEventListener('click', function() {
+  const busca = document.getElementById('patIn').value.trim().toLowerCase();
+  
+  if (!busca) {
+    alert('Digite um selo para buscar');
+    return;
+  }
+  
+  const encontrado = dadosPlanilha.find(item => 
+    String(item.costElement).toLowerCase() === busca
+  );
+  
+  if (!encontrado) {
+    document.getElementById('statusBusca').innerHTML = '<span class="notfound">Não encontrado</span>';
+    // Limpar campos
+    ['resModelo', 'resDepto', 'resUser', 'resLogin', 'resCC', 'resSelo'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    return;
+  }
+  
+  // Preencher resultados
+  document.getElementById('resModelo').value = encontrado.service || '';
+  document.getElementById('resDepto').value = encontrado.targetLocality || '';
+  document.getElementById('resUser').value = encontrado.nomeLogin || '';
+  document.getElementById('resLogin').value = encontrado.login || '';
+  document.getElementById('resCC').value = encontrado.costCenter || '';
+  document.getElementById('resSelo').value = encontrado.costElement || '';
+  
+  // Preencher formulário automaticamente
+  document.getElementById('login').value = encontrado.login || '';
+  document.getElementById('cc').value = encontrado.costCenter || '';
+  
+  document.getElementById('statusBusca').innerHTML = `<span class="found">✓ Aba: ${encontrado.aba}</span>`;
+});
+
+// ========== CARREGAR CHAMADOS ==========
 async function carregarChamados() {
   try {
     const r = await fetch(WEB_APP_URL);
     const data = await r.json();
     const tbody = document.getElementById('listaChamados');
     tbody.innerHTML = '';
+    
     data.slice(1).reverse().forEach(row => {
       let dTxt = row[0];
-      if (dTxt && dTxt.includes('T')) dTxt = new Date(dTxt).toLocaleDateString('pt-BR');
+      if (dTxt && dTxt.includes('T')) {
+        dTxt = new Date(dTxt).toLocaleDateString('pt-BR');
+      }
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${dTxt}</td><td>${row[1]}</td><td>${row[2]}</td><td><button class="btn-txt" style="padding:2px 8px">Ver</button></td>`;
+      tr.innerHTML = `<td>${dTxt}</td><td>${row[1]}</td><td>${row[2]}</td><td><button class="btn-txt" style="padding:2px 8px" onclick='visualizarChamado(${JSON.stringify(row)})'>Ver</button></td>`;
       tbody.appendChild(tr);
     });
-  } catch (e) { console.error('Erro ao carregar dados'); }
+  } catch (e) { 
+    console.error('Erro ao carregar dados'); 
+  }
 }
 
+// ========== SALVAR CHAMADO ==========
 async function salvarChamado() {
   const campos = ['titulo','solicitante','login','cc','unidade','departamento','contato','email','previsao','descricao','equipamento'];
   const params = new URLSearchParams();
@@ -248,15 +390,57 @@ async function salvarChamado() {
     alert('Chamado salvo com sucesso!');
     campos.forEach(id => document.getElementById(id).value = '');
     carregarChamados();
-  } catch(e) { alert('Erro ao salvar no servidor.'); }
+  } catch(e) { 
+    alert('Erro ao salvar no servidor.'); 
+  }
 }
 
+// ========== GERAR TXT ==========
 function gerarTXT() {
   const t = `TÍTULO: ${document.getElementById('titulo').value}\nDESCRIÇÃO: ${document.getElementById('descricao').value}`;
   const blob = new Blob([t], {type:'text/plain'});
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = 'chamado.txt';
+  link.click();
+}
+
+// ========== FUNÇÕES DO MODAL ==========
+function visualizarChamado(row) {
+  const texto = `Data: ${row[0] || ''}
+Título: ${row[1] || ''}
+Solicitante: ${row[2] || ''}
+Login: ${row[3] || ''}
+CC: ${row[4] || ''}
+Unidade: ${row[5] || ''}
+Departamento: ${row[6] || ''}
+Contato: ${row[7] || ''}
+Email: ${row[8] || ''}
+Previsão: ${row[9] || ''}
+Descrição: ${row[10] || ''}
+Equipamento: ${row[11] || ''}`;
+  
+  document.getElementById('txtPreview').value = texto;
+  document.getElementById('modalTxt').style.display = 'flex';
+}
+
+function fecharModalTxt() {
+  document.getElementById('modalTxt').style.display = 'none';
+}
+
+function copiarTxt() {
+  const txtArea = document.getElementById('txtPreview');
+  txtArea.select();
+  document.execCommand('copy');
+  alert('Texto copiado para a área de transferência!');
+}
+
+function baixarTXT() {
+  const texto = document.getElementById('txtPreview').value;
+  const blob = new Blob([texto], {type:'text/plain'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'chamado_detalhado.txt';
   link.click();
 }
 </script>
